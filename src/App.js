@@ -321,6 +321,34 @@ async fetchAlbumDuration(albumId) {
   }));
 }
 
+async fetchAlbumsByArtist(artistId) {
+  const response = await fetch(this.API_URL + `api/Albums/GetAlbumsByArtist?artistId=${artistId}`);
+  
+  const albums = await response.json();
+  
+  this.setState({ albums, isLoading: false });
+  
+  for (const album of albums) {
+    this.fetchAlbumDuration(album.Id);
+  }
+}
+
+backToArtists = () => {
+  this.setState({ currentView: 'artists' });
+  this.refreshArtists();
+}
+
+viewArtistAlbums = (artistId, artistName) => {
+  this.setState({ 
+    isLoading: true,
+    currentView: 'albums',
+    selectedArtistId: artistId,
+    selectedArtistName: artistName
+  });
+  
+  this.fetchAlbumsByArtist(artistId);
+}
+
 displayAlbums() {
   const { albums, isLoading, selectedArtistName } = this.state;
   
@@ -512,6 +540,33 @@ async deleteSong(id) {
   this.fetchAlbumDuration(this.state.selectedAlbumId);
 }
 
+async fetchSongsByAlbum(albumId) {
+  const response = await fetch(this.API_URL + `api/Songs/GetSongsByAlbum?albumId=${albumId}`);
+  
+  if (!response.ok) {
+    throw new Error(`Error fetching songs: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  this.setState({ songs: data, isLoading: false });
+}
+
+backToAlbums = () => {
+  this.setState({ currentView: 'albums' });
+  this.fetchAlbumsByArtist(this.state.selectedArtistId);
+}
+
+viewAlbumSongs = (albumId, albumName) => {
+  this.setState({ 
+    isLoading: true,
+    currentView: 'songs',
+    selectedAlbumId: albumId,
+    selectedAlbumName: albumName
+  });
+  
+  this.fetchSongsByAlbum(albumId);
+}
+
 displaySongs() {
   const { songs, isLoading, selectedAlbumName } = this.state;
   
@@ -573,61 +628,6 @@ displaySongs() {
     </div>
   );
 }
-
-viewArtistAlbums = (artistId, artistName) => {
-  this.setState({ 
-    isLoading: true,
-    currentView: 'albums',
-    selectedArtistId: artistId,
-    selectedArtistName: artistName
-  });
-  
-  this.fetchAlbumsByArtist(artistId);
-}
-
-viewAlbumSongs = (albumId, albumName) => {
-  this.setState({ 
-    isLoading: true,
-    currentView: 'songs',
-    selectedAlbumId: albumId,
-    selectedAlbumName: albumName
-  });
-  
-  this.fetchSongsByAlbum(albumId);
-}
-
-backToArtists = () => {
-  this.setState({ currentView: 'artists' });
-  this.refreshArtists();
-}
-
-backToAlbums = () => {
-  this.setState({ currentView: 'albums' });
-  this.fetchAlbumsByArtist(this.state.selectedArtistId);
-}
-
-async fetchAlbumsByArtist(artistId) {
-  const response = await fetch(this.API_URL + `api/Albums/GetAlbumsByArtist?artistId=${artistId}`);
-  
-  const albums = await response.json();
-  
-  this.setState({ albums, isLoading: false });
-  
-  for (const album of albums) {
-    this.fetchAlbumDuration(album.Id);
-  }
-}
-
-async fetchSongsByAlbum(albumId) {
-  const response = await fetch(this.API_URL + `api/Songs/GetSongsByAlbum?albumId=${albumId}`);
-  
-  if (!response.ok) {
-    throw new Error(`Error fetching songs: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  this.setState({ songs: data, isLoading: false });
-  }
 
 render() {
 
